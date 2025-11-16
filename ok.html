@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exact Location Fetch - LocationIQ</title>
+</head>
+<body>
+    <h2>Fetching your exact address...</h2>
+    <pre id="result"></pre>
+
+    <script>
+        const API_KEY = "pk.c954e8fa58330c31e42b554899296737";  // <-- apni key yahan daalna
+
+        // Step 1: Get user's browser GPS location
+        navigator.geolocation.getCurrentPosition(success, error, {
+            enableHighAccuracy: true
+        });
+
+        function success(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            // Step 2: Reverse geocoding using LocationIQ
+            const url = `https://us1.locationiq.com/v1/reverse?key=${API_KEY}&lat=${lat}&lon=${lon}&format=json`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const address = data.address;
+
+                    const full = {
+                        coordinates: {
+                            lat,
+                            lon,
+                            accuracy_m: position.coords.accuracy
+                        },
+                        address: {
+                            house_number: address.house_number || null,
+                            road: address.road || null,
+                            suburb: address.suburb || address.neighbourhood || null,
+                            city: address.city || address.town || address.village || null,
+                            state: address.state || null,
+                            postcode: address.postcode || null,
+                            country: address.country || null
+                        },
+                        full_address: data.display_name
+                    };
+
+                    document.getElementById("result").textContent =
+                        JSON.stringify(full, null, 4);
+                })
+                .catch(err => {
+                    document.getElementById("result").textContent =
+                        "Error: " + err;
+                });
+        }
+
+        function error(err) {
+            document.getElementById("result").textContent =
+                "Location Error: " + err.message;
+        }
+    </script>
+</body>
+</html>
+
+
+
+<!-- project id : justdial-478414 -->
